@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block title %}Mahsulot sotish{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4 shadow-sm">
+            <h3 class="mb-4">🛒 Mahsulot sotish</h3>
+
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Mijoz:</label>
+                    <select name="customer" class="form-select" required>
+                        {% for c in customers %}
+                            <option value="{{ c.CustomerID }}">{{ c.FullName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mahsulot:</label>
+                    <select name="product" class="form-select" required>
+                        {% for p in products %}
+                            <option value="{{ p.ProductID }}">
+                                {{ p.ProductName }} ({{ p.Stock }} dona)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Sotilayotgan miqdor:</label>
+                    <input type="number" name="quantity" min="1" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-bag-check"></i> Sotish
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

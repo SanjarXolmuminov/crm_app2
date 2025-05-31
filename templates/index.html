@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block title %}Mijozlar{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">📋 Mijozlar ro‘yxati</h3>
+
+<a href="/register" class="btn btn-success mb-3">➕ Yangi mijoz qo‘shish</a>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Ism</th>
+            <th>Email</th>
+            <th>Telefon</th>
+            <th>Kompaniya</th>
+            <th>Amallar</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers %}
+        <tr>
+            <td>{{ customer.FullName }}</td>
+            <td>{{ customer.Email }}</td>
+            <td>{{ customer.Phone }}</td>
+            <td>{{ customer.Company }}</td>
+            <td class="d-flex gap-2">
+                <a href="/edit/{{ customer.CustomerID }}" class="btn btn-warning btn-sm">✏️</a>
+                <form action="/delete/{{ customer.CustomerID }}" method="POST">
+                    <button class="btn btn-danger btn-sm">🗑️</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

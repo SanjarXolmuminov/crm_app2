@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% block title %}Mahsulot qo‘shish{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h3 class="mb-4">➕ Yangi mahsulot qo‘shish</h3>
+
+            <form method="POST">
+                <div class="row mb-3">
+                    <div class="col">
+                        <label>Mahsulot nomi:</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label>Kategoriya:</label>
+                        <select name="category" class="form-select">
+                            <option>Ayollar</option>
+                            <option>Erkaklar</option>
+                            <option>Bolalar</option>
+                            <option>Aksessuar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col">
+                        <label>O‘lcham (Size):</label>
+                        <input type="text" name="size" class="form-control" placeholder="M, L, XL yoki 36, 38">
+                    </div>
+                    <div class="col">
+                        <label>Rangi:</label>
+                        <input type="text" name="color" class="form-control" placeholder="Oq, qora, qizil">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col">
+                        <label>Narxi (so‘m):</label>
+                        <input type="number" name="price" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label>Ombordagi soni:</label>
+                        <input type="number" name="stock" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label>Tavsifi:</label>
+                    <textarea name="description" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">💾 Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

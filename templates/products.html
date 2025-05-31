@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block title %}Mahsulotlar{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">🧺 Mahsulotlar ro‘yxati</h3>
+
+<a href="/products/add" class="btn btn-success mb-3">
+    <i class="bi bi-plus-circle"></i> Yangi mahsulot qo‘shish
+</a>
+
+<div class="row">
+    {% for p in products %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ p.ProductName }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ p.Category }} | O‘lcham: {{ p.Size }}</h6>
+                <p class="mb-1">🎨 Rang: {{ p.Color }}</p>
+                <p class="mb-1">💰 Narx: <strong>{{ p.Price }}</strong> so‘m</p>
+                <p class="mb-2">📦 Omborda: <strong>{{ p.Stock }}</strong> dona</p>
+            </div>
+            <div class="card-footer d-grid">
+                <!-- O‘chirish uchun modal trigger -->
+                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ p.ProductID }}">
+                    🗑️ O‘chirish
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Har bir mahsulot uchun alohida -->
+    <div class="modal fade" id="deleteModal{{ p.ProductID }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Mahsulotni o‘chirish</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Haqiqatan ham <strong>{{ p.ProductName }}</strong> mahsulotini o‘chirmoqchimisiz?</p>
+                </div>
+                <div class="modal-footer">
+                    <form action="/products/delete/{{ p.ProductID }}" method="POST">
+                        <button type="submit" class="btn btn-danger">Ha, o‘chirish</button>
+                    </form>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
