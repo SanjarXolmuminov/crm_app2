@@ -32,7 +32,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          cd /home/ubuntu/crm-flask
+          cd /root/Networking-in-the-cloud
           git pull origin main
           docker build -t crm-flask .
           docker stop crm || true
