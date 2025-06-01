@@ -34,7 +34,3 @@ jobs:
         script: |
           cd /root/Networking-in-the-cloud
           git pull origin main
-          docker build -t crm-flask .
-          docker stop crm || true
-          docker rm crm || true
-          docker run -d --name crm -p 5000:5000 crm-flask
