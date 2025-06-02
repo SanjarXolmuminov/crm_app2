@@ -9,7 +9,7 @@ app = Flask(__name__)
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["5 per secund", "100 per minut "]  # istalgancha sozlashingiz mumkin
+    default_limits=["5 per second", "100 per minute"]
 )
 
 app.secret_key = 'bu_sirli_soz'
