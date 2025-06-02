@@ -1,7 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 
 app = Flask(__name__)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["5 per secund", "100 per minut "]  # istalgancha sozlashingiz mumkin
+)
+
 app.secret_key = 'bu_sirli_soz'
 
 def get_db_connection():

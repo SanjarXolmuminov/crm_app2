@@ -5,7 +5,7 @@ class CRMUser(HttpUser):
 
     @task
     def view_customers(self):
-        self.client.get("/")  # Mijozlar ro‘yxati sahifasi
+        self.client.get("/login")  # Mijozlar ro‘yxati sahifasi
 
     @task
     def view_products(self):
