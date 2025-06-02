@@ -12,7 +12,7 @@
                     <label class="form-label">Mijoz:</label>
                     <select name="customer" class="form-select" required>
                         {% for c in customers %}
-                            <option value="{{ c.CustomerID }}">{{ c.FullName }}</option>
+                            <option value="{{ c.id }}">{{ c.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -21,8 +21,8 @@
                     <label class="form-label">Mahsulot:</label>
                     <select name="product" class="form-select" required>
                         {% for p in products %}
-                            <option value="{{ p.ProductID }}">
-                                {{ p.ProductName }} ({{ p.Stock }} dona)
+                            <option value="{{ p.id }}">
+                                {{ p.name }} ({{ p.stock }} dona)
                             </option>
                         {% endfor %}
                     </select>

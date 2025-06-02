@@ -2,36 +2,54 @@
 {% block title %}Statistika{% endblock %}
 
 {% block content %}
-<h3 class="mb-4">📊 Eng ko‘p sotilgan mahsulotlar</h3>
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card p-4 shadow-sm">
+            <h3 class="mb-4">📊 Mahsulotlar sotuvi statistikasi</h3>
+            {% if labels and data %}
+                <canvas id="salesChart" height="100"></canvas>
+            {% else %}
+                <div class="alert alert-warning text-center">
+                    📉 Hozircha hech qanday mahsulot sotilmagan.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
-<canvas id="salesChart" height="120"></canvas>
-
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const ctx = document.getElementById('salesChart').getContext('2d');
-  const salesChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: {{ labels | safe }},
-      datasets: [{
-        label: 'Sotuvlar soni',
-        data: {{ data | safe }},
-        backgroundColor: 'rgba(54, 162, 235, 0.7)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            precision: 0
-          }
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ labels | tojson }},
+            datasets: [{
+                label: 'Sotilgan miqdor (dona)',
+                data: {{ data | tojson }},
+                backgroundColor: 'rgba(13, 110, 253, 0.6)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
         }
-      }
-    }
-  });
+    });
 </script>
 {% endblock %}

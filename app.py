@@ -1,27 +1,27 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import pyodbc
+import sqlite3
 
 app = Flask(__name__)
-app.secret_key = 'bu_sirli_soz'  # session ishlashi uchun
+app.secret_key = 'bu_sirli_soz'
 
-# SQL Server ulanish
-conn = pyodbc.connect(
-    r'DRIVER={SQL Server};SERVER=DESKTOP-4TBFSCU\SQLEXPRESS;DATABASE=CRM;Trusted_Connection=yes;'
-)
+def get_db_connection():
+    conn = sqlite3.connect('crm.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
 # ----------- LOGIN -----------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    cursor = conn.cursor()
     error = None
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        cursor.execute("SELECT * FROM Customers WHERE Email = ? AND Password = ?", (email, password))
-        user = cursor.fetchone()
+        conn = get_db_connection()
+        user = conn.execute("SELECT * FROM customers WHERE email = ? AND password = ?", (email, password)).fetchone()
+        conn.close()
         if user:
-            session['user_id'] = user.CustomerID
-            session['user_name'] = user.FullName
+            session['user_id'] = user['id']
+            session['user_name'] = user['name']
             return redirect('/')
         else:
             error = "❌ Email yoki parol noto‘g‘ri!"
@@ -35,66 +35,65 @@ def logout():
 # ----------- REGISTER -----------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    cursor = conn.cursor()
     error = None
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
         phone = request.form['phone']
-        company = request.form['company']
+        company = request.form.get('company')
         password = request.form['password']
-
-        cursor.execute("SELECT * FROM Customers WHERE Email = ?", (email,))
-        if cursor.fetchone():
+        conn = get_db_connection()
+        existing = conn.execute("SELECT * FROM customers WHERE email = ?", (email,)).fetchone()
+        if existing:
             error = "❌ Bu email allaqachon ro‘yxatdan o‘tgan."
         else:
-            cursor.execute("""
-                INSERT INTO Customers (FullName, Email, Phone, Company, Password)
-                VALUES (?, ?, ?, ?, ?)
-            """, (name, email, phone, company, password))
+            conn.execute("INSERT INTO customers (name, email, phone, company, password) VALUES (?, ?, ?, ?, ?)",
+                         (name, email, phone, company, password))
             conn.commit()
-            cursor.execute("SELECT * FROM Customers WHERE Email = ?", (email,))
-            user = cursor.fetchone()
-            session['user_id'] = user.CustomerID
-            session['user_name'] = user.FullName
+            user = conn.execute("SELECT * FROM customers WHERE email = ?", (email,)).fetchone()
+            session['user_id'] = user['id']
+            session['user_name'] = user['name']
+            conn.close()
             return redirect('/')
+        conn.close()
     return render_template('register.html', error=error)
 
-# ----------- MIJOZLAR (asosiy sahifa) -----------
+# ----------- MIJOZLAR -----------
 @app.route('/')
 def index():
     if 'user_id' not in session:
         return redirect('/login')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Customers")
-    customers = cursor.fetchall()
+    conn = get_db_connection()
+    customers = conn.execute("SELECT * FROM customers").fetchall()
+    conn.close()
     return render_template('index.html', customers=customers)
 
 @app.route('/edit/<int:id>')
 def edit_customer(id):
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Customers WHERE CustomerID = ?", (id,))
-    customer = cursor.fetchone()
+    conn = get_db_connection()
+    customer = conn.execute("SELECT * FROM customers WHERE id = ?", (id,)).fetchone()
+    conn.close()
     return render_template('edit.html', customer=customer)
 
 @app.route('/update/<int:id>', methods=['POST'])
 def update_customer(id):
-    cursor = conn.cursor()
     name = request.form['name']
     email = request.form['email']
     phone = request.form['phone']
-    company = request.form['company']
-    cursor.execute("""
-        UPDATE Customers SET FullName=?, Email=?, Phone=?, Company=? WHERE CustomerID=?
-    """, (name, email, phone, company, id))
+    company = request.form.get('company')
+    conn = get_db_connection()
+    conn.execute("UPDATE customers SET name=?, email=?, phone=?, company=? WHERE id=?",
+                 (name, email, phone, company, id))
     conn.commit()
+    conn.close()
     return redirect('/')
 
 @app.route('/delete/<int:id>', methods=['POST'])
 def delete_customer(id):
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM Customers WHERE CustomerID = ?", (id,))
+    conn = get_db_connection()
+    conn.execute("DELETE FROM customers WHERE id = ?", (id,))
     conn.commit()
+    conn.close()
     return redirect('/')
 
 # ----------- MAHSULOTLAR -----------
@@ -102,94 +101,88 @@ def delete_customer(id):
 def product_list():
     if 'user_id' not in session:
         return redirect('/login')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Products")
-    products = cursor.fetchall()
+    conn = get_db_connection()
+    products = conn.execute("SELECT * FROM products").fetchall()
+    conn.close()
     return render_template('products.html', products=products)
 
 @app.route('/products/add', methods=['GET', 'POST'])
 def add_product():
     if 'user_id' not in session:
         return redirect('/login')
-    cursor = conn.cursor()
     if request.method == 'POST':
         name = request.form['name']
         category = request.form['category']
         size = request.form['size']
         color = request.form['color']
-        price = request.form['price']
-        stock = request.form['stock']
-        desc = request.form['description']
-        cursor.execute("""
-            INSERT INTO Products (ProductName, Category, Size, Color, Price, Stock, Description)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (name, category, size, color, price, stock, desc))
+        price = float(request.form['price'])
+        stock = int(request.form['stock'])
+        description = request.form['description']
+        conn = get_db_connection()
+        conn.execute("INSERT INTO products (name, category, size, color, price, stock, description) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                     (name, category, size, color, price, stock, description))
         conn.commit()
+        conn.close()
         return redirect('/products')
     return render_template('add_product.html')
 
 @app.route('/products/delete/<int:id>', methods=['POST'])
 def delete_product(id):
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM Products WHERE ProductID = ?", (id,))
+    conn = get_db_connection()
+    conn.execute("DELETE FROM products WHERE id = ?", (id,))
     conn.commit()
+    conn.close()
     return redirect('/products')
-
-@app.route('/stats')
-def stats():
-    if 'user_id' not in session:
-        return redirect('/login')
-
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT P.ProductName, SUM(S.Quantity) AS TotalSold
-        FROM Sales S
-        JOIN Products P ON S.ProductID = P.ProductID
-        GROUP BY P.ProductName
-        ORDER BY TotalSold DESC
-    """)
-    result = cursor.fetchall()
-
-    labels = [row.ProductName for row in result]
-    data = [row.TotalSold for row in result]
-
-    return render_template('stats.html', labels=labels, data=data)
 
 # ----------- SOTISH -----------
 @app.route('/sell', methods=['GET', 'POST'])
 def sell_product():
     if 'user_id' not in session:
         return redirect('/login')
-
-    cursor = conn.cursor()
-    cursor.execute("SELECT CustomerID, FullName FROM Customers")
-    customers = cursor.fetchall()
-    cursor.execute("SELECT ProductID, ProductName, Stock FROM Products WHERE Stock > 0")
-    products = cursor.fetchall()
+    conn = get_db_connection()
+    customers = conn.execute("SELECT id, name FROM customers").fetchall()
+    products = conn.execute("SELECT id, name, stock FROM products WHERE stock > 0").fetchall()
 
     if request.method == 'POST':
-        customer_id = request.form['customer']
-        product_id = request.form['product']
+        customer_id = int(request.form['customer'])
+        product_id = int(request.form['product'])
         quantity = int(request.form['quantity'])
 
-        cursor.execute("SELECT Stock FROM Products WHERE ProductID = ?", (product_id,))
-        stock = cursor.fetchone().Stock
-
-        if stock >= quantity:
-            cursor.execute("INSERT INTO Sales (CustomerID, ProductID, Quantity) VALUES (?, ?, ?)",
-                           (customer_id, product_id, quantity))
-            cursor.execute("UPDATE Products SET Stock = Stock - ? WHERE ProductID = ?",
-                           (quantity, product_id))
+        stock_row = conn.execute("SELECT stock FROM products WHERE id = ?", (product_id,)).fetchone()
+        if stock_row and stock_row['stock'] >= quantity:
+            conn.execute("INSERT INTO sales (product_id, customer_id, quantity, date) VALUES (?, ?, ?, DATE('now'))",
+                         (product_id, customer_id, quantity))
+            conn.execute("UPDATE products SET stock = stock - ? WHERE id = ?",
+                         (quantity, product_id))
             conn.commit()
-
             flash("✅ Mahsulot muvaffaqiyatli sotildi!")
-            return redirect('/sell')
         else:
             flash("❌ Yetarli mahsulot yo‘q!")
-            return redirect('/sell')
+        conn.close()
+        return redirect('/sell')
 
+    conn.close()
     return render_template('sell.html', customers=customers, products=products)
 
-# ----------- RUN -----------
+# ----------- STATISTIKA -----------
+@app.route('/stats')
+def stats():
+    if 'user_id' not in session:
+        return redirect('/login')
+    conn = get_db_connection()
+    result = conn.execute("""
+        SELECT p.name AS product_name, SUM(s.quantity) AS total_sold
+        FROM sales s
+        JOIN products p ON s.product_id = p.id
+        GROUP BY p.name
+        ORDER BY total_sold DESC
+    """).fetchall()
+    conn.close()
+
+    labels = [row['product_name'] for row in result]
+    data = [row['total_sold'] for row in result]
+
+    return render_template('stats.html', labels=labels, data=data)
+
 if __name__ == '__main__':
     app.run(debug=True)

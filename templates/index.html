@@ -2,35 +2,50 @@
 {% block title %}Mijozlar{% endblock %}
 
 {% block content %}
-<h3 class="mb-4">📋 Mijozlar ro‘yxati</h3>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>👥 Mijozlar ro‘yxati</h3>
+    <a href="/register" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Yangi mijoz qo‘shish
+    </a>
+</div>
 
-<a href="/register" class="btn btn-success mb-3">➕ Yangi mijoz qo‘shish</a>
-
-<table class="table table-striped table-bordered">
-    <thead class="table-dark">
-        <tr>
-            <th>Ism</th>
-            <th>Email</th>
-            <th>Telefon</th>
-            <th>Kompaniya</th>
-            <th>Amallar</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for customer in customers %}
-        <tr>
-            <td>{{ customer.FullName }}</td>
-            <td>{{ customer.Email }}</td>
-            <td>{{ customer.Phone }}</td>
-            <td>{{ customer.Company }}</td>
-            <td class="d-flex gap-2">
-                <a href="/edit/{{ customer.CustomerID }}" class="btn btn-warning btn-sm">✏️</a>
-                <form action="/delete/{{ customer.CustomerID }}" method="POST">
-                    <button class="btn btn-danger btn-sm">🗑️</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% if customers %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>#</th>
+                    <th>F.I.Sh.</th>
+                    <th>Email</th>
+                    <th>Telefon</th>
+                    <th>Kompaniya</th>
+                    <th>Amallar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.phone }}</td>
+                    <td>{{ customer.company or '-' }}</td>
+                    <td>
+                        <a href="/edit/{{ customer.id }}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Tahrirlash
+                        </a>
+                        <form method="POST" action="/delete/{{ customer.id }}" class="d-inline" onsubmit="return confirm('Mijozni o‘chirishga ishonchingiz komilmi?')">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> O‘chirish
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">Hech qanday mijoz mavjud emas.</div>
+{% endif %}
 {% endblock %}
